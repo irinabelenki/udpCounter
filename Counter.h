@@ -26,6 +26,7 @@ private:
 
   struct {
     uint64_t counter, loss;
+    PreciseTime time;
   } lossHistory[16];
   int historyHead, historyTail;
 

@@ -42,7 +42,7 @@ public:
     return res;
   }
 		
-  bool operator>(const PreciseTime &arg) {
+  bool operator>(const PreciseTime &arg) const {
     if (this->time < arg.time)
       return false;
     else if (this->time > arg.time)		  
@@ -51,9 +51,16 @@ public:
       return this->millitm > arg.millitm;
   }
 
-  bool operator==(const PreciseTime &arg) {
+  bool operator==(const PreciseTime &arg) const {
     return this->time == arg.time && this->millitm == arg.millitm;
   }
+
+  friend bool operator<(const PreciseTime &arg1, const PreciseTime &arg2);
 };
+
+inline bool operator<(const PreciseTime &arg1, const PreciseTime &arg2)
+{
+  return arg2 > arg1;
+}
 
 #endif

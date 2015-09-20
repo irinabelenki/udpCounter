@@ -73,6 +73,8 @@ void UdpCounter::updateLossStats(int32_t loss)
   
   lossHistory[historyHead].counter = counter;
   lossHistory[historyHead].loss = loss;
+  ftime(&lossHistory[historyHead].time);
+
   historyHead += (historyHead + 1) % HISTORY_SIZE;
   if (historyHead == historyTail)
     historyTail += (historyTail + 1) % HISTORY_SIZE;
@@ -84,11 +86,18 @@ int UdpCounter::GetCurrentLoss(void)
   if (historyTail == historyHead)
     return 0;
 
+  PreciseTime currentTime;
+  ftime(&currentTime);
+
   uint32_t historyStartCounter = lossHistory[historyTail].counter;
   uint32_t historyLossSum = 0;
 
-  for (int i = historyTail; i != historyHead; i = (i + 1) % HISTORY_SIZE) 
+  for (int i = historyTail; i != historyHead; i = (i + 1) % HISTORY_SIZE) {
+    if ((currentTime - lossHistory[i].time) > PreciseTime(2, 0))
+      continue;
+
     historyLossSum += lossHistory[i].loss;
+  }
 
   return ((counter - historyStartCounter) * 100) / historyLossSum;
 }
