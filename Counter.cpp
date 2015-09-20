@@ -116,6 +116,8 @@ int UdpCounter::GetCurrentLoss(void)
 
 int UdpCounter::GetAverageLoss(void) 
 {
+  ReadLock rLock(&rwLock);
+
   return ((counter - startCounter) * 100) / totalLost;
 }
   
