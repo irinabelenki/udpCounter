@@ -6,10 +6,13 @@
 #include <iostream>
 
 UdpCounter::UdpCounter(int fd_) : fd(fd_) {
+  pthread_rwlock_init(&rwLock, nullptr);
   setupLossStats();
 }
 
 UdpCounter::UdpCounter(uint32_t s_addr, uint16_t  port) {
+  pthread_rwlock_init(&rwLock, nullptr);
+
   sockaddr_in addr;
 
   addr.sin_family = AF_INET;  // Supporting only IPv4
@@ -24,6 +27,11 @@ UdpCounter::UdpCounter(uint32_t s_addr, uint16_t  port) {
     throw errno;
 
   setupLossStats();
+}
+
+UdpCounter::~UdpCounter() 
+{
+  pthread_rwlock_destroy(&rwLock);
 }
 
 void UdpCounter::Run(void) {
@@ -69,6 +77,8 @@ void UdpCounter::setupLossStats()
 
 void UdpCounter::updateLossStats(int32_t loss)
 {
+  WriteLock wLock(&rwLock);
+
   totalLost += loss;
   
   lossHistory[historyHead].counter = counter;
@@ -83,6 +93,8 @@ void UdpCounter::updateLossStats(int32_t loss)
   
 int UdpCounter::GetCurrentLoss(void) 
 { 
+  ReadLock rLock(&rwLock);
+
   if (historyTail == historyHead)
     return 0;
 
